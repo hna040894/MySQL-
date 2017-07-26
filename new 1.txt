@@ -1,0 +1,85 @@
+Q3: On what day was Dillard’s income based on total sum of purchases the greatest
+
+SELECT saledate, SUM(amt)
+FROM trnsact
+GROUP BY saledate
+ORDER BY SUM(amt) DESC;
+
+Q4: What is the deptdesc of the departments that have the top 3 greatest numbers of skus from the skuinfo table associated with them?	
+
+SELECT d.deptdesc, COUNT(DISTINCT s.sku)
+FROM skuinfo s LEFT JOIN deptinfo d
+ON s.dept = d.dept
+GROUP BY d.deptdesc
+ORDER BY COUNT(DISTINCT s.sku) DESC;
+
+Q5: Which table contains the most distinct sku numbers?
+# There is no sku number in deptinfo
+SELECT COUNT(DISTINCT sku)
+FROM skstinfo;
+
+SELECT COUNT(DISTINCT sku)
+FROM skuinfo;
+
+SELECT COUNT(DISTINCT sku)
+FROM trnsact
+
+Q6: How many skus are in the skstinfo table, but NOT in the skuinfo table?
+
+SELECT COUNT(DISTINCT sk.sku)
+FROM skstinfo sk LEFT JOIN skuinfo s
+ON sk.sku = s.sku
+WHERE s.sku IS NULL;
+
+Q7: What is the average amount of profit Dillard’s made per day?
+
+HELP TABLE TRNSACT 
+HELP TABLE skstinfo
+SELECT SUM(amt - (quantity * cost))/COUNT(DISTINCT saledate) AS AVG_SALES
+FROM trnsact t, skstinfo s
+WHERE t.store = s.store AND t.sku = s.sku AND stype='P';
+
+Q8: The store_msa table provides population statistics about the geographic location around a store. Using one query to retrieve your answer, how many MSAs are there within the state of North Carolina (abbreviated “NC”), and within these MSAs, what is the lowest population level (msa_pop) and highest income level (msa_income)?
+
+HELP TABLE store_msa;
+HELP TABLE strinfo;
+SELECT s.msa, s.msa_name, s.msa_pop, s.msa_income, b.state
+FROM store_msa s, strinfo b
+WHERE s.store = b.store AND b.state='NC'
+ORDER BY s.msa_pop ASC;
+
+Q9: What department (with department description), brand, style, and color brought in the greatest total amount of sales?
+
+SELECT d.deptdesc, AVG(d.dept), SUM(amt) as total_sales, s.style, s.color, s.brand
+FROM deptinfo d, trnsact t, skuinfo s
+WHERE d.dept = s.dept AND s.sku = t.sku
+GROUP BY d.deptdesc, s.style, s.color, s.brand
+ORDER BY total_sales DESC;
+
+Q10. How many stores have more than 180,000 distinct skus associated with them in the skstinfo table?
+
+SELECT store, COUNT(DISTINCT sku)
+FROM skstinfo
+GROUP BY store
+HAVING COUNT(DISTINCT sku) >= 180000;
+
+Q11. In what city and state is the store that had the greatest total sum of sales?
+
+SELECT SUM(amt) as total_sales, s.state, s.store, s.city
+FROM trnsact t, store_msa s
+WHERE t.store = s.store
+GROUP BY s.state, s.store, s.city
+ORDER BY total_sales DESC;
+
+Q15. How many states have more than 10 Dillards stores in them?
+
+SELECT state, COUNT(DISTINCT store)
+FROM strinfo
+GROUP BY state
+HAVING COUNT(DISTINCT store)>10;
+
+Q16. What is the suggested retail price of all the skus in the “reebok” department with the “skechers” brand and a “wht/saphire” color?
+
+SELECT d.dept, d.deptdesc, s.sku, s.color, s.brand, a.retail
+FROM deptinfo d, skuinfo s, skstinfo a
+WHERE d.dept = s.dept AND s.sku = a.sku AND d.deptdesc='reebok' AND s.brand='skechers' AND s.color='wht/saphire';
