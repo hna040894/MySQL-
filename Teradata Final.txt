@@ -26,7 +26,8 @@ GROUP BY sku
 WHERE stype = 'p' 	
 order by incr desc;
 
-Q5.What vendor has the greatest number of distinct skus in the transaction table that do not exist in the skstinfo table? (Remember that vendors are listed as distinct numbers in our data set).
+Q5.What vendor has the greatest number of distinct skus in the transaction table that do not exist in the skstinfo table? 
+(Remember that vendors are listed as distinct numbers in our data set).
 
 SELECT COUNT(DISTINCT t.sku) as num_sku, s.vendor
 FROM skuinfo s LEFT JOIN trnsact t
