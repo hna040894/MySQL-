@@ -6,11 +6,13 @@ SELECT COUNT(DISTINCT sku)
 FROM skuinfo
 WHERE brand = 'polo fas' AND (size = 'XXL' OR color = 'black');
 
-Q3. There was one store in the database which had only 11 days in one of its months (in other words, that store/month/year combination only contained 11 days of transaction data). 
+Q3. There was one store in the database which had only 11 days in one of its months (in other words, 
+that store/month/year combination only contained 11 days of transaction data). 
 In what city and state was this store located?
 
-SELECT DISTINCT (s.store || extract(month from saledate) || extract(year from saledate)) as comb, count(DISTINCT saledate) as num_date, s.state, s.city
-FROMrom store_msa s LEFT JOIN trnsact t
+SELECT DISTINCT (s.store || extract(month from saledate) || extract(year from saledate)) as comb, 
+count(DISTINCT saledate) as num_date, s.state, s.city
+FROM store_msa s LEFT JOIN trnsact t
 ON s.store = t.store
 GROUP BY comb, s.state, s.city
 ORDER BY num_date ASC;
@@ -36,7 +38,8 @@ WHERE t.sku NOT IN (SELECT sk.sku FROM skstinfo sk)
 group by s.vendor
 order by num_sku DESC;
 
-Q6. What is the brand of the sku with the greatest standard deviation in sprice? Only examine skus which have been part of over 100 transactions.
+Q6. What is the brand of the sku with the greatest standard deviation in sprice? 
+Only examine skus which have been part of over 100 transactions.
 
 SELECT gr_std.sku, gr_std.StdDev_price , s.brand AS Brand, gr_std.num_sku
 FROM (SELECT sku, STDDEV_SAMP(sprice) AS StdDev_price, COUNT(sku) AS num_sku
@@ -48,7 +51,8 @@ JOIN skuinfo s
 ON gr_std.sku=s.sku
 ORDER BY gr_std.StdDev_price DESC;
 
-Q7. What is the city and state of the store which had the greatest increase in average daily revenue (as defined in Teradata Week 5 Exercise Guide) from November to December?
+Q7. What is the city and state of the store which had the greatest increase in average daily revenue 
+(as defined in Teradata Week 5 Exercise Guide) from November to December?
 
 SELECT city, state, dailyincr
 FROM (SELECT DISTINCT store,
@@ -65,10 +69,13 @@ ON store_msa.store = rev.store
 GROUP BY city, state, dailyincr
 ORDER BY dailyincr DESC;\
 
-Q8. Compare the average daily revenue (as defined in Teradata Week 5 Exercise Guide) of the store with the highest msa_income and the store with the lowest median msa_income 
+Q8. Compare the average daily revenue (as defined in Teradata Week 5 Exercise Guide) 
+of the store with the highest msa_income and the store with the lowest median msa_income 
 
-SELECT SUM(store_rev. tot_sales)/SUM(store_rev.numdays) AS daily_average, store_rev.msa_income as med_income, store_rev.city, store_rev.state
-FROM (SELECT COUNT (DISTINCT t.saledate) as numdays, EXTRACT(YEAR from t.saledate) as s_year, EXTRACT(MONTH from t.saledate) as s_month, t.store, sum(t.amt) as tot_sales, 
+SELECT SUM(store_rev. tot_sales)/SUM(store_rev.numdays) AS daily_average, 
+store_rev.msa_income as med_income, store_rev.city, store_rev.state
+FROM (SELECT COUNT (DISTINCT t.saledate) as numdays, EXTRACT(YEAR from t.saledate) as s_year, 
+EXTRACT(MONTH from t.saledate) as s_month, t.store, sum(t.amt) as tot_sales, 
 CASE when extract(year from t.saledate) = 2005 AND extract(month from t.saledate) = 8 then 'exclude'
 END as exclude_flag, m.msa_income, s.city, s.state
 FROM trnsact t JOIN store_msa m
@@ -82,14 +89,16 @@ GROUP BY med_income, store_rev.city, store_rev.state;
 
 Q10. What is the average daily revenue (as defined in Teradata Week 5 Exercise Guide) for a store in a “very large” population msa?
 
-SELECT SUM(store_rev. tot_sales)/SUM(store_rev.numdays) AS daily_avg, CASE WHEN store_rev.msa_pop BETWEEN 1 AND 100000 THEN 'very small'
+SELECT SUM(store_rev. tot_sales)/SUM(store_rev.numdays) AS daily_avg, 
+CASE WHEN store_rev.msa_pop BETWEEN 1 AND 100000 THEN 'very small'
 WHEN store_rev.msa_pop BETWEEN 100001 AND 200000 THEN 'small'
 WHEN store_rev.msa_pop BETWEEN 200001 AND 500000 THEN 'med_small'
 WHEN store_rev.msa_pop BETWEEN 500001 AND 1000000 THEN 'med_large'
 WHEN store_rev.msa_pop BETWEEN 1000001 AND 5000000 THEN 'large'
 WHEN store_rev.msa_pop > 5000000 then 'very large'
 END as pop_group
-FROM(SELECT COUNT (DISTINCT t.saledate) as numdays, EXTRACT(YEAR from t.saledate) as s_year, EXTRACT(MONTH from t.saledate) as s_month, t.store, sum(t.amt) AS tot_sales,
+FROM(SELECT COUNT (DISTINCT t.saledate) as numdays, EXTRACT(YEAR from t.saledate) as s_year, 
+EXTRACT(MONTH from t.saledate) as s_month, t.store, sum(t.amt) AS tot_sales,
 CASE when extract(year from t.saledate) = 2005 AND extract(month from t.saledate) = 8 then 'exclude'
 END as exclude_flag, m.msa_pop
 FROM trnsact t JOIN store_msa m
@@ -100,8 +109,9 @@ HAVING numdays >= 20) as store_rev
 GROUP BY pop_group
 ORDER BY daily_avg;
 
-Q11. Which department in which store had the greatest percent increase in average daily sales revenue from November to December, and what city and state was that store located in?
- Only examine departments whose total sales were at least $1,000 in both November and December.
+Q11. Which department in which store had the greatest percent increase in average daily sales revenue from November to December,
+and what city and state was that store located in?
+Only examine departments whose total sales were at least $1,000 in both November and December.
 
 SELECT s.store, s.city, s.state, d.deptdesc, sum(case when extract(month from saledate)=11 then amt end) as November,
 COUNT(DISTINCT (case WHEN EXTRACT(MONTH from saledate) ='11' then saledate END)) as Nov_numdays, sum(case when extract(month from saledate)=12 then amt end) as December,
@@ -124,7 +134,8 @@ CASE when extract(year from t.saledate) = 2005 AND extract(month from t.saledate
 END as exclude_flag,
 SUM(case WHEN EXTRACT(MONTH from saledate) =’8’ THEN amt END) as August,
 SUM case WHEN EXTRACT(MONTH from saledate) =’9’ THEN amt END) as September,
-COUNT(DISTINCT (case WHEN EXTRACT(MONTH from saledate) ='8' then saledate END)) as Aug_numdays, COUNT(DISTINCT (case WHEN EXTRACT(MONTH from saledate) ='9' then saledate END)) as Sept_numdays, 
+COUNT(DISTINCT (case WHEN EXTRACT(MONTH from saledate) ='8' then saledate END)) as Aug_numdays, 
+COUNT(DISTINCT (case WHEN EXTRACT(MONTH from saledate) ='9' then saledate END)) as Sept_numdays, 
 (August/Aug_numdays)-(September/Sept_numdays) AS dip
 FROM trnsact t JOIN strinfo s
 ON t.store=s.store JOIN skuinfo si
@@ -136,7 +147,8 @@ HAVING COUNT(DISTINCT saledate)>= 20)
 GROUP BY s.city, s.state, d.deptdesc, t.store, exclude_flag
 ORDER BY dip DESC;
 
-Q13. Identify which department, in which city and state of what store, had the greatest DECREASE in the number of items sold from August to September. 
+Q13. Identify which department, in which city and state of what store, had the greatest DECREASE in 
+the number of items sold from August to September. 
 How many fewer items did that department sell in September compared to August?
 
 SELECT s.city, s.state, d.deptdesc, t.store,
